@@ -1,0 +1,8 @@
+.installed.cfg
+.mr.developer.cfg
+.python-version
+bin/
+develop-eggs/
+eggs/
+parts/
+src/
