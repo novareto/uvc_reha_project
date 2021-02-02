@@ -1,7 +1,7 @@
 app:
 
   session:
-    cache: ${path:sessions}
+    cache: ${path:var/sessions}
     cookie_name: docmanager.cookie
     cookie_secret: secret
 
