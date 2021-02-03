@@ -33,13 +33,11 @@ def start(config):
     import docmanager.mq
     from docmanager.startup import Applications
     from rutter.urlmap import URLMap
-    from ukh.reha.app import UKHRequest
 
     importscan.scan(docmanager)
 
     logger = make_logger("docmanager")
     apps = Applications.from_configuration(config, logger=logger)
-    apps.browser.request_factory = UKHRequest
 
     apps.browser.register_middleware(
         fanstatic_middleware(config.app.assets), order=0)  # very first.

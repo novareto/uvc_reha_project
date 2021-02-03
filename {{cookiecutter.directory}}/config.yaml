@@ -30,7 +30,7 @@ amqp:
   serializer: json
 
 environ:
-  CHAMELEON_CACHE: /tmp/templates_cache
+  CHAMELEON_CACHE: var/templates_cache
   #  CHAMELEON_RELOAD: yes 
 
 server:
