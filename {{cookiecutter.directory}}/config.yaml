@@ -1,5 +1,8 @@
 app:
 
+  factories:
+    user: ${class:uvcreha.models.User}
+
   session:
     cache: ${path:var/sessions}
     cookie_name: docmanager.cookie
