@@ -30,14 +30,14 @@ def session_middleware(config) -> WSGICallable:
 def start(config):
     import bjoern
     import importscan
-    import ukhreha
-    import ukhreha.mq
-    from ukhreha.startup import Applications
+    import uvcreha
+    import uvcreha.mq
+    from uvcreha.startup import Applications
     from rutter.urlmap import URLMap
 
-    importscan.scan(ukhreha)
+    importscan.scan(uvcreha)
 
-    logger = make_logger("ukhreha")
+    logger = make_logger("uvcreha")
     apps = Applications.from_configuration(config, logger=logger)
 
     apps.browser.register_middleware(

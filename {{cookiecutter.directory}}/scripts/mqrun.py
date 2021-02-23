@@ -5,23 +5,21 @@ from reiter.application.startup import environment, make_logger
 
 def start(config):
     import importscan
-    import docmanager
-    import docmanager.mq
-    from docmanager.startup import Applications
+    import uvcreha
+    import uvcreha.mq
+    from uvcreha.startup import Applications
     from rutter.urlmap import URLMap
-    from ukh.reha.app import UKHRequest
 
-    importscan.scan(docmanager)
+    importscan.scan(uvcreha)
 
-    logger = make_logger("docmanager")
+    logger = make_logger("uvcreha")
     apps = Applications.from_configuration(config, logger=logger)
-    apps.browser.request_factory = UKHRequest
 
     app = URLMap()
     app["/"] = apps.browser
 
     # Serving the app
-    AMQPworker = docmanager.mq.Worker(app, config.amqp)
+    AMQPworker = uvcreha.mq.Worker(app, config.amqp)
     AMQPworker()
 
 
