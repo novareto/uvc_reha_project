@@ -1,5 +1,6 @@
 import functools
 import pathlib
+from typing import Type
 from fanstatic import Fanstatic
 from omegaconf import OmegaConf
 from reiter.application.startup import environment, make_logger
@@ -29,14 +30,14 @@ def session_middleware(config) -> WSGICallable:
 def start(config):
     import bjoern
     import importscan
-    import docmanager
-    import docmanager.mq
-    from docmanager.startup import Applications
+    import ukhreha
+    import ukhreha.mq
+    from ukhreha.startup import Applications
     from rutter.urlmap import URLMap
 
-    importscan.scan(docmanager)
+    importscan.scan(ukhreha)
 
-    logger = make_logger("docmanager")
+    logger = make_logger("ukhreha")
     apps = Applications.from_configuration(config, logger=logger)
 
     apps.browser.register_middleware(
@@ -70,8 +71,13 @@ def resolve_path(path: str) -> str:
     return str(path.resolve())
 
 
+def resolve_class(path: str) -> Type:
+    from zope.dottedname import resolve
+    return resolve.resolve(path)
+
 if __name__ == "__main__":
     OmegaConf.register_resolver("path", resolve_path)
+    OmegaConf.register_resolver("class", resolve_class)
     baseconf = OmegaConf.load('config.yaml')
     override = OmegaConf.from_cli()
     config = OmegaConf.merge(baseconf, override)
