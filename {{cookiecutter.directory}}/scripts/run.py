@@ -1,83 +1,62 @@
-import functools
-import pathlib
-from typing import Type
-from fanstatic import Fanstatic
-from omegaconf import OmegaConf
-from reiter.application.startup import environment, make_logger
-from horseman.prototyping import WSGICallable
-
-
-def fanstatic_middleware(config) -> WSGICallable:
-    return functools.partial(Fanstatic, **config)
-
-
-def session_middleware(config) -> WSGICallable:
-    import cromlech.session
-    import cromlech.sessions.file
-
-    handler = cromlech.sessions.file.FileStore(
-        config.session.cache, 3000
-    )
-    manager = cromlech.session.SignedCookieManager(
-        config.session.cookie_secret,
-        handler,
-        cookie=config.session.cookie_name
-    )
-    return cromlech.session.WSGISessionManager(
-        manager, environ_key=config.env.session)
-
+# Start up script
 
 def start(config):
     import bjoern
-    import importscan
     import uvcreha
     import uvcreha.mq
-    from uvcreha.startup import Applications
+    import uvcreha.tasker
+    import reha.client
+    import importscan
     from rutter.urlmap import URLMap
-
-    importscan.scan(uvcreha)
+    from reiter.application.startup import make_logger
+    from uvcreha.startup import Applications
 
     logger = make_logger("uvcreha")
     apps = Applications.from_configuration(config, logger=logger)
 
-    apps.browser.register_middleware(
-        fanstatic_middleware(config.app.assets), order=0)  # very first.
-
-    apps.browser.register_middleware(
-        session_middleware(config.app), order=1)
-
     app = URLMap()
     app['/'] = apps.browser
     app['/api'] = apps.api
+    app['/backend'] = apps.backend
 
-    # Serving the app
+    importscan.scan(uvcreha)
+    importscan.scan(reha.client)
 
-    if not config.server.socket:
-        logger.info(
-            "Server started on "
-            f"http://{config.server.host}:{config.server.port}")
-        bjoern.run(
-            app, config.server.host,
-            int(config.server.port), reuse_port=True)
-    else:
-        logger.info(
-            f"Server started on socket {config.server.socket}.")
+    #tasker = uvcreha.tasker.Tasker.create(apps)
+    #tasker.start()
 
-        bjoern.run(app, config.server.socket)
+    try:
+        if not config.server.socket:
+            logger.info(
+                "Server started on "
+                f"http://{config.server.host}:{config.server.port}")
+            #pprint.pprint(list(apps.browser.routes))
+            bjoern.run(
+                app, config.server.host,
+                int(config.server.port), reuse_port=True)
+        else:
+            logger.info(
+                f"Server started on socket {config.server.socket}.")
+            bjoern.run(app, config.server.socket)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        #tasker.stop()
+        pass
 
-
-def resolve_path(path: str) -> str:
-    path = pathlib.Path(path)
-    return str(path.resolve())
-
-
-def resolve_class(path: str) -> Type:
-    from zope.dottedname import resolve
-    return resolve.resolve(path)
 
 if __name__ == "__main__":
+    import pathlib
+    from zope.dottedname import resolve
+    from omegaconf import OmegaConf
+    from reiter.application.startup import environment, make_logger
+
+    def resolve_path(path: str) -> str:
+        path = pathlib.Path(path)
+        return str(path.resolve())
+
     OmegaConf.register_resolver("path", resolve_path)
-    OmegaConf.register_resolver("class", resolve_class)
+    OmegaConf.register_resolver("class", resolve.resolve)
     baseconf = OmegaConf.load('config.yaml')
     override = OmegaConf.from_cli()
     config = OmegaConf.merge(baseconf, override)
