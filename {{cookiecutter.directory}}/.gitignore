@@ -25,6 +25,7 @@ bin/
 develop-eggs/
 eggs/
 fillme.py
-identities/
+identities/public_key.pem
+identities/private_key.pem
 parts/
 src/

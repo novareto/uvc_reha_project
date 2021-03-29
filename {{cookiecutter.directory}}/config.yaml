@@ -46,8 +46,8 @@ defaults:
 
 
 webpush:
-  public_key: ${path:identities/public_key.txt}
-  private_key: ${path:identities/private_key.txt}
+  public_key: ${path:identities/public_key.pem}
+  private_key: ${path:identities/private_key.pem}
   vapid_claims:
     sub: mailto:cklinger@novareto.de
     aud: https://updates.push.services.mozilla.com
