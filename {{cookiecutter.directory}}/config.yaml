@@ -21,6 +21,10 @@ app:
     bottom: True
     publisher_signature: static
 
+  storage:
+    root: ${path:storage}
+    schemas: ${path:schemas}
+
 
 arango:
   user: root
