@@ -32,17 +32,21 @@ arango:
   database: docmanager
   url: http://127.0.0.1:8529
 
+
 amqp:
   url: amqp://guest:guest@localhost:5672//
   serializer: json
 
+
 environ:
   CHAMELEON_CACHE: var/templates_cache
-  #  CHAMELEON_RELOAD: yes 
+  CHAMELEON_RELOAD: "1" 
+
 
 server:
   host: 0.0.0.0
   port: 8080
+
 
 defaults:
   - hydra/job_logging: colorlog
@@ -55,6 +59,7 @@ webpush:
   vapid_claims:
     sub: mailto:cklinger@novareto.de
     aud: https://updates.push.services.mozilla.com
+
 
 emailer:
   host: localhost
