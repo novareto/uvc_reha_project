@@ -1,0 +1,52 @@
+modules:
+  reha.client: ${dotted:reha.client}
+
+components:
+
+
+  admin_session:
+    factory: ${dotted:uvcreha.plugins.session_middleware}
+    config:
+      cache: ${path:var/sessions}
+      cookie_name: reha.client.cookie
+      cookie_secret: secret
+      environ_key: ${components.session.config.environ_key}
+
+
+  admin_authentication:
+    factory: ${dotted:reha.client.auth.AdminAuth}
+    config:
+      user_key: user
+      session_key: ${components.session.config.environ_key}
+      connector: ${component:arango}
+      filters:
+        - ${component:auth_bypass}
+        - ${component:auth_urls}
+
+
+
+
+apps:
+
+
+  /backend:
+
+    factory: ${dotted:reiter.application.app.BrowserApplication}
+
+    config:
+      name: Admin backend
+      request_factory: ${dotted:reha.client.app.AdminRequest}
+      routes: ${dotted:reha.client.app.backend}
+      ui: ${dotted:reha.client.app.ui}
+      utilities:
+        arango: ${component:arango}
+        emailer: ${component:emailer}
+        flash: ${component:flash}
+        authentication: ${component:admin_authentication}
+
+    middlewares:
+      - ${component:assets}
+      - ${component:session}
+      - ${component:admin_authentication}
+
+
