@@ -1,4 +1,3 @@
-config.yaml
 pytest.ini
 src/cromlech.marshallers/
 src/cromlech.session/
@@ -22,6 +21,7 @@ src/roughrider.predicate/
 .mr.developer.cfg
 README
 bin/
+etc/
 develop-eggs/
 eggs/
 fillme.py

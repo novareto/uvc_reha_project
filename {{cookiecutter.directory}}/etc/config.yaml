@@ -33,14 +33,6 @@ components:
       cookie_secret: secret
       environ_key: uvcreha.session
 
-  admin_session:
-    factory: ${dotted:uvcreha.plugins.session_middleware}
-    config:
-      cache: ${path:var/sessions}
-      cookie_name: reha.client.cookie
-      cookie_secret: secret
-      environ_key: ${components.session.config.environ_key}
-
   arango:
     factory: ${dotted:reiter.arango.connector.Connector.from_config}
     config:
@@ -61,15 +53,6 @@ components:
         - ${component:auth_user_states}
         - ${component:auth_twoFA}
 
-  admin_authentication:
-    factory: ${dotted:reha.client.auth.AdminAuth}
-    config:
-      user_key: user
-      session_key: ${components.session.config.environ_key}
-      connector: ${component:arango}
-      filters:
-        - ${component:auth_bypass}
-        - ${component:auth_urls}
 
   flash:
     factory: ${dotted:uvcreha.plugins.flash_messages}
@@ -112,10 +95,7 @@ components:
 
 
 modules:
-  - ${dotted:uvcreha}
-  - ${dotted:bg.example}
-  - ${dotted:reha.client}
-
+  reha: ${dotted:uvcreha}
 
 apps:
 
@@ -141,26 +121,6 @@ apps:
       - ${component:assets}
       - ${component:session}
       - ${component:authentication}
-
-  /backend:
-
-    factory: ${dotted:reiter.application.app.BrowserApplication}
-
-    config:
-      name: Admin backend
-      request_factory: ${dotted:reha.client.app.AdminRequest}
-      routes: ${dotted:reha.client.app.backend}
-      ui: ${dotted:reha.client.app.ui}
-      utilities:
-        arango: ${component:arango}
-        emailer: ${component:emailer}
-        flash: ${component:flash}
-        authentication: ${component:admin_authentication}
-
-    middlewares:
-      - ${component:assets}
-      - ${component:session}
-      - ${component:admin_authentication}
 
 
 environ:
