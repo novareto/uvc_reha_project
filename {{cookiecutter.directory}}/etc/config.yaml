@@ -1,136 +1,35 @@
-name: My Project
+components: !include:components.yaml
 
-components:
+schemas: !apply:uvcreha.jsonschema.store.load_from_folder
+  - !new:pathlib.Path [schemas]
 
-  auth_bypass:
-    factory: ${dotted:uvcreha.auth.filters.security_bypass}
-    config:
-       urls:
-         - /login
-
-  auth_urls:
-    factory: ${dotted:uvcreha.auth.filters.secured}
-    config:
-       path: /login
-
-  auth_user_states:
-    factory: ${dotted:uvcreha.auth.filters.filter_user_state}
-    config:
-       states:
-         - ${dotted:uvcreha.workflow.user_workflow.states.inactive}
-         - ${dotted:uvcreha.workflow.user_workflow.states.closed}
-
-  auth_twoFA:
-    factory: ${dotted:uvcreha.auth.filters.TwoFA}
-    config:
-       path: /2FA
-
-  session:
-    factory: ${dotted:uvcreha.plugins.session_middleware}
-    config:
-      cache: ${path:var/sessions}
-      cookie_name: uvcreha.cookie
-      cookie_secret: secret
-      environ_key: uvcreha.session
-
-  arango:
-    factory: ${dotted:reiter.arango.connector.Connector.from_config}
-    config:
-      user: ck
-      password: ck
-      database: p2
-      url: http://localhost:8529
-
-  authentication:
-    factory: ${dotted:uvcreha.auth.Auth}
-    config:
-      user_key: user
-      session_key: ${components.session.config.environ_key}
-      connector: ${component:arango}
-      filters:
-        - ${component:auth_bypass}
-        - ${component:auth_urls}
-        - ${component:auth_user_states}
-        - ${component:auth_twoFA}
-
-
-  flash:
-    factory: ${dotted:uvcreha.plugins.flash_messages}
-    config:
-      session_key: ${components.session.config.environ_key}
-
-  webpush:
-    factory: ${dotted:uvcreha.plugins.webpush_plugin}
-    config:
-      public_key: ${path:identities/public_key.pem}
-      private_key: ${path:identities/private_key.pem}
-      vapid_claims:
-        sub: mailto:cklinger@novareto.de
-        aud: https://updates.push.services.mozilla.com
-
-  emailer:
-    factory: ${dotted:uvcreha.emailer.SecureMailer}
-    config:
-      user:
-      password:
-      emitter: uvcreha@novareto.de
-
-  twoFA:
-    factory: ${dotted:uvcreha.auth.utilities.TwoFA}
-    config:
-      session_key: ${components.session.config.environ_key}
-
-  vhm:
-    component: ${dotted:repoze.vhm.middleware.VHMExplicitFilter}
-    config:
-      host: http://kraft.novareto.de:8080
-
-  assets:
-    component: ${dotted:fanstatic.Fanstatic}
-    config:
-      compile: True
-      recompute_hashes: True
-      bottom: True
-      publisher_signature: static
-
+logger: !apply:logging.basicConfig
+   level: !name:logging.INFO    
 
 modules:
-  reha: ${dotted:uvcreha}
+  - !module:uvcreha
+  - !module:bg.example
 
-apps:
-
-  /:
-
-    factory: ${dotted:reiter.application.app.BrowserApplication}
-
-    config:
-      name: Browser
-      request_factory: ${dotted:uvcreha.request.Request}
-      routes: ${dotted:uvcreha.app.browser}
-      subscribers: ${dotted:uvcreha.app.events}
-      ui: ${dotted:uvcreha.app.ui}
-      utilities:
-        arango: ${component:arango}
-        webpush: ${component:webpush}
-        emailer: ${component:emailer}
-        flash: ${component:flash}
-        authentication: ${component:authentication}
-        twoFA: ${component:twoFA}
-
-    middlewares:
-      - ${component:assets}
-      - ${component:session}
-      - ${component:authentication}
-
+workers:
+   amqp: !new:reiter.amqp.worker.Worker
+     amqpcenter: !name:reiter.amqp.mq.AMQP
+     url: amqp://guest:guest@localhost:5672//
+     app: !ref <components[uvcreha]>
 
 environ:
   CHAMELEON_CACHE: var/templates_cache
   CHAMELEON_RELOAD: '1'
 
 
-server:
-  factory: ${dotted:bjoern.run}
-  config:
-    host: 0.0.0.0
-    port: 8080
-    reuse_port: true
+browser: !apply:horsebox.utils.apply_middlewares
+  canonic: !ref <components[uvcreha]>
+  middlewares:
+    - !ref <components[assets]>
+    - !ref <components[session]>
+    - !ref <components[authentication]>
+
+runner: !name:bjoern.run
+  host: 0.0.0.0
+  port: 8080
+  reuse_port: true
+  wsgi_app: !ref <browser>

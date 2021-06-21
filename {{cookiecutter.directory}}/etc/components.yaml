@@ -1,120 +1,81 @@
-components:
+auth_bypass: !apply:uvcreha.auth.filters.security_bypass
+  urls:
+    - /login
 
-  auth_bypass: !apply:uvcreha.auth.filters.security_bypass
-    urls:
-      - /login
+auth_urls: !apply:uvcreha.auth.filters.secured
+  path: /login
 
-  auth_urls: !apply:uvcreha.auth.filters.secured
-    path: /login
+auth_user_states: !apply:uvcreha.auth.filters.filter_user_state
+  states:
+    - !name:uvcreha.workflow.user_workflow.states.inactive
+    - !name:uvcreha.workflow.user_workflow.states.closed
 
-  auth_user_states: !apply:uvcreha.auth.filters.filter_user_state
-    states:
-      - !name:uvcreha.workflow.user_workflow.states.inactive
-      - !name:uvcreha.workflow.user_workflow.states.closed
+auth_twoFA: !apply:uvcreha.auth.filters.TwoFA
+  path: /2FA
 
-  auth_twoFA: !apply:uvcreha.auth.filters.TwoFA
-    path: /2FA
+session: !apply:uvcreha.plugins.session_middleware
+  cache: !new:pathlib.Path [var/sessions]
+  cookie_name: uvcreha.cookie
+  cookie_secret: secret
+  environ_key: uvcreha.session
 
-  session: !apply:uvcreha.plugins.session_middleware
-    cache: !new:pathlib.Path [var/sessions]
-    cookie_name: uvcreha.cookie
-    cookie_secret: secret
-    environ_key: uvcreha.session
+arango: !apply:reiter.arango.connector.Connector.from_config
+  user: ck
+  password: ck
+  database: p2
+  url: http://localhost:8529
 
-  arango: !apply:reiter.arango.connector.Connector.from_config
-    user: ck
-    password: ck
-    database: p2
-    url: http://localhost:8529
+authentication: !new:uvcreha.auth.Auth
+  user_key: user
+  session_key: !ref <session[environ_key]>
+  connector: !ref <arango>
+  filters:
+    - !ref <auth_bypass>
+    - !ref <auth_urls>
+    - !ref <auth_user_states>
+    - !ref <auth_twoFA>
 
-  authentication: !new:uvcreha.auth.Auth
-    user_key: user
-    session_key: !ref <components[session][environ_key]>
-    connector: !ref <components[arango]>
-    filters:
-      - !ref <components[auth_bypass]>
-      - !ref <components[auth_urls]>
-      - !ref <components[auth_user_states]>
-      - !ref <components[auth_twoFA]>
+flash: !apply:uvcreha.plugins.flash_messages
+  session_key: !ref <session[environ_key]>
 
-  flash: !apply:uvcreha.plugins.flash_messages
-    session_key: !ref <components[session][environ_key]>
+webpush: !apply:uvcreha.plugins.webpush_plugin
+  public_key: !new:pathlib.Path [identities/public_key.pem]
+  private_key: !new:pathlib.Path [identities/private_key.pem]
+  vapid_claims:
+    sub: mailto:cklinger@novareto.de
+    aud: https://updates.push.services.mozilla.com
 
-  webpush: !apply:uvcreha.plugins.webpush_plugin
-    public_key: !new:pathlib.Path [identities/public_key.pem]
-    private_key: !new:pathlib.Path [identities/private_key.pem]
-    vapid_claims:
-      sub: mailto:cklinger@novareto.de
-      aud: https://updates.push.services.mozilla.com
+emailer: !new:uvcreha.emailer.SecureMailer
+  user:
+  password:
+  emitter: uvcreha@novareto.de
 
-  emailer: !new:uvcreha.emailer.SecureMailer
-    user:
-    password:
-    emitter: uvcreha@novareto.de
+twoFA: !new:uvcreha.auth.utilities.TwoFA
+  session_key: !ref <session[environ_key]>
 
-  twoFA: !new:uvcreha.auth.utilities.TwoFA
-    session_key: !ref <components[session][environ_key]>
+vhm: !name:repoze.vhm.middleware.VHMExplicitFilter
+  host: http://kraft.novareto.de:8080
 
-  vhm: !name:repoze.vhm.middleware.VHMExplicitFilter
-    host: http://kraft.novareto.de:8080
+amqp: !new:reiter.amqp.emitter.AMQPEmitter
+  url: amqp://guest:guest@localhost:5672//
 
-  assets: !name:fanstatic.Fanstatic
-    compile: True
-    recompute_hashes: True
-    bottom: True
-    publisher_signature: static
+assets: !name:fanstatic.Fanstatic
+  compile: True
+  recompute_hashes: True
+  bottom: True
+  publisher_signature: static
 
-  uvcreha: !new:reiter.application.app.BrowserApplication
-    name: Browser
-    request_factory: !name:uvcreha.request.Request
-    routes: !name:uvcreha.app.browser
-    subscribers: !name:uvcreha.app.events
-    ui: !name:uvcreha.app.ui
-    utilities:
-      arango: !ref <components[arango]>
-      webpush: !ref <components[webpush]>
-      emailer: !ref <components[emailer]>
-      flash: !ref <components[flash]>
-      authentication: !ref <components[authentication]>
-      twoFA: !ref <components[twoFA]>
-
-
-modules:
-  - !module:uvcreha
-
-
-workers:
-
-   amqp: !new:reiter.amqp.worker.Worker
-     amqpcenter: !name:reiter.amqp.mq.AMQP
-     url: amqp://guest:guest@localhost:5672//
-     app: !ref <components[uvcreha]>
-
-
-environ:
-  CHAMELEON_CACHE: var/templates_cache
-  CHAMELEON_RELOAD: '1'
-
-
-web_applications:
-  /: !apply:horsebox.utils.apply_middlewares
-    - !ref <components[uvcreha]>
-      -
-        - !ref <components[assets]>
-        - !ref <components[session]>
-        - !ref <components[authentication]>
-
-runners:
-
-  main: !name:bjoern.run
-    host: 0.0.0.0
-    port: 8080
-    reuse_port: true
-    wsgi_app: !new:horsebox.builtins.HTTPRouter
-      applications: !ref <web_applications>
-
-
-  amqp: !new:reiter.amqp.worker.Consumer
-    amqpcenter: !name:reiter.amqp.mq.AMQP
-    url: amqp://guest:guest@localhost:5672//
-    app: !ref <components[uvcreha]>
+uvcreha: !new:reiter.application.app.BrowserApplication
+  name: Browser
+  request_factory: !name:uvcreha.request.Request
+  routes: !name:uvcreha.app.browser
+  subscribers: !name:uvcreha.app.events
+  ui: !name:uvcreha.app.ui
+  utilities:
+    amqp: !ref <amqp>
+    arango: !ref <arango>
+    webpush: !ref <webpush>
+    emailer: !ref <emailer>
+    flash: !ref <flash>
+    authentication: !ref <authentication>
+    twoFA: !ref <twoFA>
