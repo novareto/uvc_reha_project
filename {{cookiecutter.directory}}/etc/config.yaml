@@ -8,7 +8,7 @@ logger: !apply:logging.basicConfig
 
 modules:
   - !module:uvcreha
-  - !module:bg.example
+#  - !module:bg.example
 
 workers:
    amqp: !new:reiter.amqp.worker.Worker
