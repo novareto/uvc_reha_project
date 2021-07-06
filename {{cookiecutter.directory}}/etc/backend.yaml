@@ -53,11 +53,19 @@ backend: !apply:horsebox.utils.apply_middlewares
     - !ref <admin_authentication>
 
 
+browser: !apply:horsebox.utils.apply_middlewares
+  canonic: !ref <components[uvcreha]>
+  middlewares:
+    - !ref <components[assets]>
+    - !ref <components[session]>
+    - !ref <components[authentication]>
+
+
 runner: !name:bjoern.run
   host: 0.0.0.0
   port: 8080
   reuse_port: true
   wsgi_app: !new:horsebox.builtins.HTTPRouter
     applications:
-      /: !ref <components[uvcreha]>
+      /: !ref <browser>
       /backend: !ref <backend>
