@@ -6,15 +6,21 @@ schemas: !apply:uvcreha.jsonschema.store.load_from_folder
 logger: !apply:logging.basicConfig
    level: !name:logging.INFO    
 
-modules:
-  - !module:uvcreha
-#  - !module:bg.example
 
-workers:
-   amqp: !new:reiter.amqp.worker.Worker
-     amqpcenter: !name:reiter.amqp.mq.AMQP
-     url: amqp://guest:guest@localhost:5672//
-     app: !ref <components[uvcreha]>
+loaders:
+  - !name:horsebox.utils.modules_loader
+    - !module:uvcreha
+#    - !module:bg.example
+  - !name:uvcreha.jsonschema.store.load_from_folder
+    - !new:pathlib.Path [schemas]
+
+
+
+#workers:
+#   amqp: !new:reiter.amqp.worker.Worker
+#     amqpcenter: !name:reiter.amqp.mq.AMQP
+#     url: amqp://guest:guest@localhost:5672//
+#     app: !ref <components[uvcreha]>
 
 environ:
   CHAMELEON_CACHE: var/templates_cache
