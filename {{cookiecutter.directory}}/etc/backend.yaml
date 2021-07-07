@@ -17,12 +17,12 @@ admin_authentication: !new:reha.client.auth.AdminAuth
     - !ref <components[auth_bypass]>
     - !ref <components[auth_urls]>
 
-schemas: !apply:uvcreha.jsonschema.store.load_from_folder
-  - !new:pathlib.Path [schemas]
-
-modules:
-  - !module:uvcreha
-  - !module:reha.client
+loaders:
+  - !name:horsebox.utils.modules_loader
+    - !module:uvcreha
+    - !module:reha.client
+  - !name:uvcreha.jsonschema.store.load_from_folder
+    - !new:pathlib.Path [schemas]
 
 workers:
    amqp: !new:reiter.amqp.worker.Worker
@@ -48,7 +48,7 @@ backend: !apply:horsebox.utils.apply_middlewares
       authentication: !ref <admin_authentication>
   middlewares:
     - !ref <components[assets]>
-    - !ref <vhm>
+#    - !ref <vhm>
     - !ref <components[session]>
     - !ref <admin_authentication>
 
@@ -65,7 +65,6 @@ runner: !name:bjoern.run
   host: 0.0.0.0
   port: 8080
   reuse_port: true
-  wsgi_app: !new:horsebox.builtins.HTTPRouter
-    applications:
-      /: !ref <browser>
-      /backend: !ref <backend>
+  wsgi_app: !new:horseman.mapping.Mapping
+    /: !ref <browser>
+    /backend: !ref <backend>
