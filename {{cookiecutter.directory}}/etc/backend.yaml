@@ -24,11 +24,11 @@ loaders:
   - !name:uvcreha.jsonschema.store.load_from_folder
     - !new:pathlib.Path [schemas]
 
-workers:
-   amqp: !new:reiter.amqp.worker.Worker
-     amqpcenter: !name:reiter.amqp.mq.AMQP
-     url: amqp://guest:guest@localhost:5672//
-     app: !ref <components[uvcreha]>
+#workers:
+#   amqp: !new:reiter.amqp.worker.Worker
+#     amqpcenter: !name:reiter.amqp.mq.AMQP
+#     url: amqp://guest:guest@localhost:5672//
+#     app: !ref <components[uvcreha]>
 
 environ:
   CHAMELEON_CACHE: var/templates_cache

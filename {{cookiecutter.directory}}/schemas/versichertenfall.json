@@ -1,0 +1,79 @@
+{
+    "id": "VersichertenFall",
+    "title": "VersichertenFall",
+    "type": "object",
+    "properties": {
+        "aktenzeichen": {
+            "title": "Aktenzeichen",
+            "type": "string"
+        },
+        "artDerPersonID": {
+            "title": "Artderpersonid",
+            "type": "integer"
+        },
+        "artDerPersonKNZ": {
+            "title": "Artderpersonknz",
+            "type": "integer"
+        },
+        "artDerPersonPrompt": {
+            "title": "Artderpersonprompt",
+            "type": "string"
+        },
+        "artHeilverfahrenKNZ": {
+            "title": "Artheilverfahrenknz",
+            "type": "string"
+        },
+        "artHeilverfahrenPrompt": {
+            "title": "Artheilverfahrenprompt",
+            "type": "string"
+        },
+        "bearbstsPrompt": {
+            "title": "Bearbstsprompt",
+            "type": "string"
+        },
+        "bezirksverwaltungPrompt": {
+            "title": "Bezirksverwaltungprompt",
+            "type": "string"
+        },
+        "bezirksverwaltungKNZ": {
+            "title": "Bezirksverwaltungknz",
+            "type": "integer"
+        },
+        "krankenkasseIKNummer": {
+            "title": "Krankenkasseiknummer",
+            "type": "integer"
+        },
+        "krankenkassenTypPrompt": {
+            "title": "Krankenkassentypprompt",
+            "type": "string"
+        },
+        "sachbearbeiter": {
+            "title": "Sachbearbeiter",
+            "type": "string"
+        },
+        "personID": {
+            "title": "Personid",
+            "type": "integer"
+        },
+        "mitgliedsnummer": {
+            "title": "Mitgliedsnummer",
+            "type": "integer"
+        }
+    },
+    "required": [
+        "aktenzeichen",
+        "artDerPersonID",
+        "artDerPersonKNZ",
+        "artDerPersonPrompt",
+        "artHeilverfahrenKNZ",
+        "artHeilverfahrenPrompt",
+        "bearbstsPrompt",
+        "bezirksverwaltungPrompt",
+        "bezirksverwaltungKNZ",
+        "krankenkasseIKNummer",
+        "krankenkassenTypPrompt",
+        "sachbearbeiter",
+        "personID",
+        "mitgliedsnummer"
+    ]
+}

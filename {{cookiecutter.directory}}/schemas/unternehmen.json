@@ -1,0 +1,38 @@
+{
+    "id": "Unternehmen",
+    "title": "Unternehmen",
+    "type": "object",
+    "properties": {
+        "name1": {
+            "title": "Name1",
+            "type": "string"
+        },
+        "name2": {
+            "title": "Name2",
+            "type": "string"
+        },
+        "name3": {
+            "title": "Name3",
+            "type": "string"
+        },
+        "strasse": {
+            "title": "Strasse",
+            "type": "string"
+        },
+        "plz": {
+            "title": "Plz",
+            "type": "string"
+        },
+        "ort": {
+            "title": "Ort",
+            "type": "string"
+        }
+    },
+    "required": [
+        "name1",
+        "name2",
+        "strasse",
+        "plz",
+        "ort"
+    ]
+}
