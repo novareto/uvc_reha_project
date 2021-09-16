@@ -20,9 +20,9 @@ session: !apply:uvcreha.plugins.session_middleware
   environ_key: uvcreha.session
 
 arango: !apply:reiter.arango.connector.Connector.from_config
-  user: ck
-  password: ck
-  database: p2
+  user: reha 
+  password: reha
+  database: reha
   url: http://localhost:8529
 
 authentication: !new:uvcreha.auth.Auth
