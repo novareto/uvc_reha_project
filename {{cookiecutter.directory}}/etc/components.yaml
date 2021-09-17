@@ -56,8 +56,8 @@ twoFA: !new:uvcreha.auth.utilities.TwoFA
 vhm: !name:repoze.vhm.middleware.VHMExplicitFilter
   host: http://kraft.novareto.de:8080
 
-amqp: !new:reiter.amqp.emitter.AMQPEmitter
-  url: amqp://guest:guest@localhost:5672//
+#amqp: !new:reiter.amqp.emitter.AMQPEmitter
+#  url: amqp://guest:guest@localhost:5672//
 
 assets: !name:fanstatic.Fanstatic
   compile: True
@@ -72,7 +72,7 @@ uvcreha: !new:reiter.application.app.BrowserApplication
   subscribers: !name:uvcreha.app.events
   ui: !name:uvcreha.app.ui
   utilities:
-    amqp: !ref <amqp>
+    #    amqp: !ref <amqp>
     arango: !ref <arango>
     webpush: !ref <webpush>
     emailer: !ref <emailer>
