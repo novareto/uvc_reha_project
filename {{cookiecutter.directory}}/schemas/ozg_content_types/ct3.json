@@ -1,0 +1,10 @@
+{
+    "id": "CT",
+    "$version": 3, 
+    "type": "object",
+    "properties": {
+        "x3ost-office-box": {
+            "type": "string"
+        }
+    }
+}

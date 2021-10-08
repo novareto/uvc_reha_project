@@ -1,0 +1,10 @@
+{
+    "id": "CT",
+    "$version":1,
+    "type": "object",
+    "properties": {
+        "post-office-box": {
+            "type": "string"
+        }
+    }
+}
