@@ -3,14 +3,10 @@
 def init_database(registry):
     import importscan
     import reha.sql
-    from roughrider.sqlalchemy.component import SQLAlchemyEngine
 
-    database = reha.sql.Database(
-        SQLAlchemyEngine.from_url(
-            name="sql",
-            url="sqlite:///example.db"
-        )
+    database = reha.sql.Database.from_url(
+    ┆   url="sqlite:///example.db"
     )
     importscan.scan(reha.sql)
-    database.instanciate(registry)
+    database.instanciate()
     return database
