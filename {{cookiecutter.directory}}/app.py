@@ -19,6 +19,9 @@ from reha.prototypes import contents
 from reha.prototypes.workflows.user import user_workflow
 
 
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 # setup contents
 uvcreha.contents.registry.register('user', contents.User)
 uvcreha.contents.registry.register('file', contents.File)
@@ -26,10 +29,7 @@ uvcreha.contents.registry.register('document', contents.Document)
 
 
 #from database.arango import init_database
-try:
-    from database.sql import init_database
-except:
-    from config.database.sql import init_database
+from database.sql import init_database
 
 
 import reha.sql
@@ -84,7 +84,7 @@ emailer = uvcreha.emailer.SecureMailer(
 
 # 2FA
 twoFA = reiter.auth.utilities.TwoFA(
-  session_key=session.environ_key
+    session_key=session.environ_key
 )
 
 
@@ -106,9 +106,13 @@ authentication = reiter.auth.components.Auth(
     )
 )
 
+import reha.siguv_theme
+ui = reha.siguv_theme.get_theme(request_type=uvcreha.app.Request)
+
+
 browser_app = uvcreha.app.Application(
     database=database,
-    ui=uvcreha.browser.ui,
+    ui=ui,
     routes=uvcreha.browser.routes,
     authentication=authentication,
     utilities={
@@ -163,7 +167,7 @@ class AdminRequest(reha.client.app.AdminRequest, uvcreha.app.Request):
 backend_app = uvcreha.app.Application(
     database=database,
     authentication=admin_authentication,
-    ui=uvcreha.browser.ui,
+    ui=ui,
     routes=reha.client.app.routes,
     request_factory=AdminRequest,
     utilities={
