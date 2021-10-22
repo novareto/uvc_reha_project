@@ -29,3 +29,10 @@ identities/public_key.pem
 identities/private_key.pem
 parts/
 src/
+var/
+lib/
+pyvenv.cfg
+*__pycache__*
+include/
+*.pem
+*.db
