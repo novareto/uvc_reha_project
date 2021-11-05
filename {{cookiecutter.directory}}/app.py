@@ -26,6 +26,7 @@ logger.setLevel(logging.INFO)
 uvcreha.contents.registry.register('user', contents.User)
 uvcreha.contents.registry.register('file', contents.File)
 uvcreha.contents.registry.register('document', contents.Document)
+uvcreha.contents.registry.register('preferences', contents.Preferences)
 
 
 #from database.arango import init_database
@@ -111,6 +112,7 @@ ui = reha.siguv_theme.get_theme(request_type=uvcreha.app.Request)
 
 
 browser_app = uvcreha.app.Application(
+    secret=b"verygeheim",
     database=database,
     ui=ui,
     routes=uvcreha.browser.routes,
@@ -129,6 +131,7 @@ browser_app.authentication.sources.append(
 
 
 api_app = uvcreha.app.API(
+    secret=b"verygeheim",
     database=database,
     routes=uvcreha.api.routes,
     utilities={
@@ -165,6 +168,7 @@ class AdminRequest(reha.client.app.AdminRequest, uvcreha.app.Request):
 
 
 backend_app = uvcreha.app.Application(
+    secret=b"verygeheim",
     database=database,
     authentication=admin_authentication,
     ui=ui,
