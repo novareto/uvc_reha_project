@@ -46,15 +46,15 @@ importscan.scan(uvcreha.api)
 ### Middlewares
 
 # Session
+session_environ = "uvcreha.session"
+
 session = uvcreha.plugins.session_middleware(
-    cache=pathlib.Path("var/sessions"),
-    cookie_name="uvcreha.cookie",
-    cookie_secret="secret",
-    environ_key="uvcreha.test.session"
+    pathlib.Path("var/sessions"), secret='secret',
+    cookie_name="uvcreha.cookie"
 )
 
 session_getter = reiter.auth.components.session_from_environ(
-    session.environ_key
+    session_environ
 )
 
 
@@ -62,7 +62,7 @@ session_getter = reiter.auth.components.session_from_environ(
 
 # flash
 flash = uvcreha.plugins.flash_messages(
-  session_key=session.environ_key
+  session_key=session_environ
 )
 
 
@@ -85,7 +85,7 @@ emailer = uvcreha.emailer.SecureMailer(
 
 # 2FA
 twoFA = reiter.auth.utilities.TwoFA(
-    session_key=session.environ_key
+    session_key=session_environ
 )
 
 
@@ -216,14 +216,14 @@ load_content_types(pathlib.Path("./schemas/content_types"))
 from horseman.mapping import Mapping
 wsgi_app = Mapping({
     "/": fanstatic.Fanstatic(
-        session(browser_app),
+        session(browser_app, environ_key=session_environ),
         compile=True,
         recompute_hashes=True,
         bottom=True,
         publisher_signature="static"
     ),
     "/backend": fanstatic.Fanstatic(
-        session(backend_app),
+        session(backend_app, environ_key=session_environ),
         compile=True,
         recompute_hashes=True,
         bottom=True,
