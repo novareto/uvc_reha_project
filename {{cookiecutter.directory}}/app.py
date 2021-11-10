@@ -216,14 +216,14 @@ load_content_types(pathlib.Path("./schemas/content_types"))
 from horseman.mapping import Mapping
 wsgi_app = Mapping({
     "/": fanstatic.Fanstatic(
-        session(browser_app, environ_key=session_environ),
+        session(browser_app, environ_key=session_environ, secure=False),
         compile=True,
         recompute_hashes=True,
         bottom=True,
         publisher_signature="static"
     ),
     "/backend": fanstatic.Fanstatic(
-        session(backend_app, environ_key=session_environ),
+        session(backend_app, environ_key=session_environ, secure=False),
         compile=True,
         recompute_hashes=True,
         bottom=True,
