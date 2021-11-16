@@ -182,7 +182,7 @@ backend_app = uvcreha.app.Application(
 )
 
 
-importscan.scan(reha.client)  # backend
+reha.client.install_me(backend_app)  # backend
 
 # import themes
 import reha.siguv_theme
@@ -217,7 +217,7 @@ from horseman.mapping import Mapping
 wsgi_app = Mapping({
     "/": fanstatic.Fanstatic(
         session(browser_app, environ_key=session_environ, secure=False),
-        compile=True,
+        compile=False,
         recompute_hashes=True,
         bottom=True,
         publisher_signature="static"
