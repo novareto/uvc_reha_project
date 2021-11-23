@@ -108,15 +108,21 @@ authentication = reiter.auth.components.Auth(
 )
 
 import reha.siguv_theme
-ui = reha.siguv_theme.get_theme(request_type=uvcreha.app.Request)
+ui = reha.siguv_theme.get_theme(
+    request_type=uvcreha.app.Request,
+    resources=[
+        uvcreha.browser.resources.f_input_group,
+        uvcreha.browser.resources.webpush_subscription
+    ]
+)
 
 
 browser_app = uvcreha.app.Application(
-    secret=b"verygeheim",
     database=database,
     ui=ui,
     routes=uvcreha.browser.routes,
     authentication=authentication,
+    actions=uvcreha.browser.actions,
     utilities={
         "webpush": webpush,
         "emailer": emailer,
@@ -131,7 +137,6 @@ browser_app.authentication.sources.append(
 
 
 api_app = uvcreha.app.API(
-    secret=b"verygeheim",
     database=database,
     routes=uvcreha.api.routes,
     utilities={
@@ -168,11 +173,11 @@ class AdminRequest(reha.client.app.AdminRequest, uvcreha.app.Request):
 
 
 backend_app = uvcreha.app.Application(
-    secret=b"verygeheim",
     database=database,
     authentication=admin_authentication,
     ui=ui,
     routes=reha.client.app.routes,
+    actions=reha.client.app.actions,
     request_factory=AdminRequest,
     utilities={
         "webpush": webpush,
