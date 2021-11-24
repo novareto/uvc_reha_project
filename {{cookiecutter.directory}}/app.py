@@ -25,10 +25,12 @@ from reha.prototypes.workflows.user import user_workflow
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh = logging.FileHandler('var/event.log')
 fh.setFormatter(formatter)
+sh = logging.StreamHandler()
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(fh)
+logger.addHandler(sh)
 
 
 ### Setup Contents
