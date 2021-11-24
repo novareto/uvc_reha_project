@@ -1,4 +1,5 @@
 import fanstatic
+import logging
 import pathlib
 import importscan
 import uvcreha
@@ -19,28 +20,35 @@ from reha.prototypes import contents
 from reha.prototypes.workflows.user import user_workflow
 
 
-import logging
+### Logging
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh = logging.FileHandler('var/event.log')
+fh.setFormatter(formatter)
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-# setup contents
+logger.addHandler(fh)
+
+
+### Setup Contents
+
 uvcreha.contents.registry.register('user', contents.User)
 uvcreha.contents.registry.register('file', contents.File)
 uvcreha.contents.registry.register('document', contents.Document)
 uvcreha.contents.registry.register('preferences', contents.Preferences)
-
-
-#from database.arango import init_database
-from database.sql import init_database
-
-
-import reha.sql
-
-database = init_database(reha.sql.mappers)
-
-
 # Load essentials
 importscan.scan(uvcreha.browser)
 importscan.scan(uvcreha.api)
+
+
+### Database
+
+#from database.arango import init_database
+import reha.sql
+from database.sql import init_database
+
+database = init_database(reha.sql.mappers)
 
 
 ### Middlewares
@@ -50,7 +58,8 @@ session_environ = "uvcreha.session"
 
 session = uvcreha.plugins.session_middleware(
     pathlib.Path("var/sessions"), secret='secret',
-    cookie_name="uvcreha.cookie"
+    cookie_name="uvcreha.cookie", 
+    salt="abc123" 
 )
 
 session_getter = reiter.auth.components.session_from_environ(
@@ -65,16 +74,6 @@ flash = uvcreha.plugins.flash_messages(
   session_key=session_environ
 )
 
-
-# webpush
-webpush = uvcreha.plugins.webpush_plugin(
-    public_key=pathlib.Path("config/identities/public_key.pem"),
-    private_key=pathlib.Path("config/identities/private_key.pem"),
-    vapid_claims={
-        "sub": "mailto:cklinger@novareto.de",
-        "aud": "https://updates.push.services.mozilla.com"
-    }
-)
 
 # Email
 emailer = uvcreha.emailer.SecureMailer(
@@ -107,9 +106,18 @@ authentication = reiter.auth.components.Auth(
     )
 )
 
+# Theme
 import reha.siguv_theme
-ui = reha.siguv_theme.get_theme(request_type=uvcreha.app.Request)
+ui = reha.siguv_theme.get_theme(
+    request_type=uvcreha.app.Request,
+    resources=[
+        uvcreha.browser.resources.f_input_group,
+        uvcreha.browser.resources.webpush_subscription
+    ]
+)
+importscan.scan(reha.siguv_theme)
 
+### Application
 
 browser_app = uvcreha.app.Application(
     secret=b"verygeheim",
@@ -117,8 +125,9 @@ browser_app = uvcreha.app.Application(
     ui=ui,
     routes=uvcreha.browser.routes,
     authentication=authentication,
+    actions=uvcreha.browser.actions,
     utilities={
-        "webpush": webpush,
+#        "webpush": webpush,
         "emailer": emailer,
         "flash": flash,
         "twoFA": twoFA,
@@ -130,18 +139,23 @@ browser_app.authentication.sources.append(
 )
 
 
+### OpenAPI Application 
+
+
 api_app = uvcreha.app.API(
     secret=b"verygeheim",
     database=database,
     routes=uvcreha.api.routes,
     utilities={
-        "webpush": webpush,
+#        "webpush": webpush,
         "emailer": emailer,
         "database": database,
     }
 )
 
-# Backend
+
+### Backend
+
 import reha.client
 import reha.client.app
 import reiter.auth.testing
@@ -171,6 +185,7 @@ backend_app = uvcreha.app.Application(
     secret=b"verygeheim",
     database=database,
     authentication=admin_authentication,
+    actions=reha.client.app.actions,
     ui=ui,
     routes=reha.client.app.routes,
     request_factory=AdminRequest,
@@ -184,33 +199,27 @@ backend_app = uvcreha.app.Application(
 
 reha.client.install_me(backend_app)  # backend
 
-# import themes
-import reha.siguv_theme
-#import reha.ukh_theme
-
-#importscan.scan(reha.ukh_theme)  # Collecting UI elements
-importscan.scan(reha.siguv_theme)  # Collecting UI elements
+# Load content types
+from uvcreha.contents import load_content_types
+load_content_types(pathlib.Path("./schemas/content_types"))
 
 
-# Plugins
+
+
+### Plugins
+
+# OZG
 #import uv.ozg
-#import uv.ozg.app
+#uv.ozg.install_me(browser_app)
+#uv.ozg.app.load_content_types(pathlib.Path("./schemas/ozg_content_types"))
 
-#importscan.scan(uv.ozg)
-#uv.ozg.app.load_content_types(pathlib.Path("./content_types"))
 
+# Own Package
 #import reha.example
 #importscan.scan(reha.example)
 
-#from reha.example.principal import MyPrincipal
-#uvcreha.contents.registry.register('user', MyPrincipal)
 
-
-# Load content types
-from uvcreha.contents import load_content_types
-
-load_content_types(pathlib.Path("./schemas/content_types"))
-
+### SERVER
 
 # URL Mapping
 from horseman.mapping import Mapping
@@ -231,12 +240,3 @@ wsgi_app = Mapping({
     ),
     "/api": api_app
 })
-
-
-# Run me
-#bjoern.run(
-#    host="0.0.0.0",
-#    port=8082,
-#    reuse_port=True,
-#    wsgi_app=wsgi_app
-#)
