@@ -114,7 +114,6 @@ ui = reha.siguv_theme.get_theme(
     request_type=uvcreha.app.Request,
     resources=[
         uvcreha.browser.resources.f_input_group,
-        uvcreha.browser.resources.webpush_subscription
     ]
 )
 importscan.scan(reha.siguv_theme)
@@ -122,7 +121,6 @@ importscan.scan(reha.siguv_theme)
 ### Application
 
 browser_app = uvcreha.app.Application(
-    secret=b"verygeheim",
     database=database,
     ui=ui,
     routes=uvcreha.browser.routes,
@@ -145,7 +143,6 @@ browser_app.authentication.sources.append(
 
 
 api_app = uvcreha.app.API(
-    secret=b"verygeheim",
     database=database,
     routes=uvcreha.api.routes,
     utilities={
@@ -184,7 +181,6 @@ class AdminRequest(reha.client.app.AdminRequest, uvcreha.app.Request):
 
 
 backend_app = uvcreha.app.Application(
-    secret=b"verygeheim",
     database=database,
     authentication=admin_authentication,
     actions=reha.client.app.actions,
@@ -192,7 +188,7 @@ backend_app = uvcreha.app.Application(
     routes=reha.client.app.routes,
     request_factory=AdminRequest,
     utilities={
-        "webpush": webpush,
+#        "webpush": webpush,
         "emailer": emailer,
         "flash": flash,
     }
